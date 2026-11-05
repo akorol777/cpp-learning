@@ -1,0 +1,325 @@
+================================================================================
+PRACTICAL TASK: CAR MOVEMENT WITH TARGET TRACKING
+================================================================================
+
+TASK OVERVIEW
+=============
+
+Write a program that simulates a car moving on a 1000x1000 rectangular field.
+The car must navigate from its starting position to locate and hit a target at
+unknown coordinates. The program should trace all movements and print the
+journey log.
+
+This task reinforces:
+  ✓ Struct usage (grouping car state and movement log)
+  ✓ Vector usage (storing movement trace)
+  ✓ Navigation logic (movement and direction)
+  ✓ Coordinate-based detection (distance calculations)
+
+
+FIELD AND INITIAL CONDITIONS
+=============================
+
+Field size: 1000 x 1000 (rectangular area)
+  - X-axis: 0 to 999 (horizontal)
+  - Y-axis: 0 to 999 (vertical)
+
+Car initial position: (0, 0) - bottom-left corner
+
+Car initial direction: One of four cardinal directions
+  - North: moving along +Y axis (forward increases Y)
+  - South: moving along -Y axis (forward decreases Y)
+  - East: moving along +X axis (forward increases X)
+  - West: moving along -X axis (forward decreases X)
+
+Target position: Provided by user input (x_target, y_target)
+  - Any valid position within the 1000x1000 field
+
+
+CAR MECHANICS
+=============
+
+Car State:
+  - Position: (x, y) - current location on the field
+  - Direction: North / South / East / West - which way car is facing
+  - Status: moving or stationary
+
+Car Movements:
+
+1. "move forward" or "move fwd"
+   - Move 1 unit in the direction the car is facing
+   - If facing North: (x, y) → (x, y+1)
+   - If facing South: (x, y) → (x, y-1)
+   - If facing East: (x, y) → (x+1, y)
+   - If facing West: (x, y) → (x-1, y)
+   - Position changes, direction unchanged
+
+2. "move backward" or "move bwd"
+   - Move 1 unit opposite to the direction the car is facing
+   - If facing North: (x, y) → (x, y-1)
+   - If facing South: (x, y) → (x, y+1)
+   - If facing East: (x, y) → (x-1, y)
+   - If facing West: (x, y) → (x+1, y)
+   - Position changes, direction unchanged
+
+3. "turn left" or "turn left"
+   - Rotate car 90 degrees counter-clockwise
+   - Position unchanged, direction changes
+   - North → West, West → South, South → East, East → North
+
+4. "turn right" or "turn right"
+   - Rotate car 90 degrees clockwise
+   - Position unchanged, direction changes
+   - North → East, East → South, South → West, West → North
+
+
+TARGET DETECTION
+================
+
+Target Hit Condition:
+  Car "sees" the target in a 1-step radius (3x3 grid centered on car)
+  Car hits target when target is in one of these relative positions:
+    (-1, -1)  (0, -1)  (+1, -1)
+    (-1,  0)  (0,  0)  (+1,  0)
+    (-1, +1)  (0, +1)  (+1, +1)
+
+Example 1: Car at (5, 5), target at (4, 4)
+  Relative position: target - car = (-1, -1) ✓ HIT
+
+Example 2: Car at (5, 5), target at (5, 5)
+  Relative position: target - car = (0, 0) ✓ HIT
+
+Example 3: Car at (5, 5), target at (7, 7)
+  Relative position: target - car = (2, 2) ✗ NO HIT (too far)
+
+Example 4: Car at (5, 5), target at (6, 6)
+  Relative position: target - car = (1, 1) ✓ HIT
+
+Detection Logic:
+  is_target_hit = (abs(target_x - car_x) <= 1) AND (abs(target_y - car_y) <= 1)
+
+
+MOVEMENT INPUT
+==============
+
+The program should accept movement commands one at a time:
+  - "move forward" or "move fwd" - move in current direction
+  - "move backward" or "move bwd" - move opposite to current direction
+  - "turn left" or "turn left" - rotate counter-clockwise
+  - "turn right" or "turn right" - rotate clockwise
+
+Input format (from std::cin):
+  Enter target coordinates: x_target y_target
+  Then for each step:
+    Enter move: [move command]
+
+Program continues until target is hit.
+
+
+OUTPUT FORMAT
+=============
+
+For each step, print:
+  step | action | position (x,y) | result
+
+Where:
+  - step: Step number (starting from 0)
+  - action: The action performed (turn right, move fwd, etc.)
+  - position: Current car position after the action
+  - result: "no target" or "target hit (x_target, y_target)"
+
+At the end:
+  Print summary:
+    - Total steps taken
+    - Final position
+    - Confirmation: "Target hit at [step number]"
+
+Format example:
+  Step | Action     | Position (x,y) | Result
+  ─────┼────────────┼────────────────┼─────────────────────
+  0    | turn right | (0,0)          | no target
+  1    | move fwd   | (1,0)          | no target
+  2    | turn left  | (1,0)          | no target
+  3    | move fwd   | (1,1)          | target hit (2,2)
+
+
+COMPLETE EXAMPLE
+================
+
+Input:
+  Target coordinates: 2 2
+  Step 0: turn right
+  Step 1: move fwd
+  Step 2: turn left
+  Step 3: move fwd
+
+Output:
+
+Target: (2, 2)
+
+Step | Action     | Position (x,y) | Result
+─────┼────────────┼────────────────┼──────────────────
+0    | turn right | (0,0)          | no target
+1    | move fwd   | (1,0)          | no target
+2    | turn left  | (1,0)          | no target
+3    | move fwd   | (1,1)          | target hit (2,2)
+
+═════════════════════════════════════════════════
+Journey Complete!
+Total steps: 4
+Final position: (1,1)
+Target location: (2,2)
+Target hit at step: 3
+═════════════════════════════════════════════════
+
+
+CONSTRAINTS
+===========
+
+Field boundaries:
+  - Valid X: 0 to 999
+  - Valid Y: 0 to 999
+  - Car must stay within field
+  - Movement that would go outside field should be rejected
+    (or handle gracefully - your design choice)
+
+Direction handling:
+  - Use numeric or enum to represent directions
+  - Turning changes direction, not position
+  - 4 cardinal directions only (North, East, South, West)
+
+Detection radius:
+  - Exactly 3x3 grid (distance 1 in all directions)
+  - Diagonal detection allowed
+  - No distance beyond 1 counts as hit
+
+
+IMPLEMENTATION REQUIREMENTS
+===========================
+
+Must use:
+  ✓ Struct(s) to organize data (design your own)
+  ✓ Vector to store the movement trace
+  ✓ Functions to handle:
+    - Movement processing (forward, backward)
+    - Direction changes (turn left, turn right)
+    - Target detection logic
+    - Output formatting
+
+Code organization:
+  ✓ Define appropriate struct(s) for your solution
+  ✓ Separate functions for movement and rotation
+  ✓ Clear function names
+  ✓ Input validation (coordinates within bounds)
+  ✓ Proper use of structs (group related data logically)
+
+
+EDGE CASES TO CONSIDER
+======================
+
+1. Target at car's exact position (0, 0)
+   → Should be detected immediately (distance = 0)
+
+2. Target at edge/corner of field
+   → Car still detects it if within 1-step radius
+
+3. Car movement near field boundary
+   → What happens when car tries to move outside?
+   → Option A: Reject movement (stay in place)
+   → Option B: Wrap around (not realistic, avoid)
+   → Option C: Stop and report error
+   → Choose one and document it
+
+4. Very far target (e.g., (999, 999))
+   → Program should still work, just take many steps
+
+5. Invalid input
+   → Graceful handling of unexpected commands
+   → Ask user to re-enter if needed
+
+
+BONUS FEATURES (Optional)
+=========================
+
+If time permits, consider:
+  ✓ Show distance to target at each step
+  ✓ Allow automated pathfinding (not manual moves)
+  ✓ Add movement speed/energy constraints
+  ✓ Print visual map of field with car and target
+  ✓ Statistics: shortest path vs actual path
+  ✓ Replay the journey
+
+
+SUCCESS CRITERIA
+================
+
+Your solution is successful if:
+  ✓ Program accepts target coordinates
+  ✓ Program accepts movement commands
+  ✓ Car correctly updates position/direction
+  ✓ Target detection works for 3x3 radius
+  ✓ Output format matches specification
+  ✓ Program terminates when target hit
+  ✓ Uses structs appropriately
+  ✓ Uses vectors to store trace
+  ✓ Code is well-organized with functions
+  ✓ No memory leaks or crashes
+
+
+LEARNING OUTCOMES
+=================
+
+After completing this task, you should:
+  ✓ Understand struct usage for grouping related data
+  ✓ Use vectors to store collections of structs
+  ✓ Work with coordinate-based logic
+  ✓ Implement 2D navigation (movement and rotation)
+  ✓ Apply detection/collision logic
+  ✓ Organize code with multiple functions
+  ✓ Format output clearly for users
+
+
+SUGGESTED SOLUTION STRUCTURE
+=============================
+
+1. Design your structs
+   - Think about what data describes car state
+   - Think about what data describes each movement step
+   - What should be grouped together?
+
+2. Helper functions:
+   - Movement functions (forward, backward, turn left, turn right)
+   - Target detection logic
+   - Input command processing
+
+3. Main program:
+   - Get target coordinates
+   - Initialize car state
+   - Loop until target hit:
+     - Get movement command
+     - Process command and update car state
+     - Check if target hit
+     - Store step information (in your struct)
+     - Store step in vector
+     - Print step information
+   - Print final summary
+
+
+NOTES FOR STUDENTS
+==================
+
+- Think about how to represent direction (int, enum, or string)
+- Distance formula for 2D: absolute value of differences
+- Vector push_back() is your friend for logging movements
+- Test with simple targets first (close to origin)
+- Then test with far targets (999, 999)
+- Don't worry about optimal path - focus on mechanics
+
+This is a great task to practice:
+  - Struct design for state management
+  - Vectors for data collection
+  - 2D coordinate geometry
+  - User interaction and output formatting
+
+
+================================================================================
